@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>VueJS chat</title>
-	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 	<style>
 		body, html {
 			font: 1em 'Roboto', sans-serif;
@@ -17,17 +17,28 @@
 		.chat__list {
 			list-style-type: none;
 			padding: 0;
-			margin: 0;
+			margin: 0 0 34px;
 		}
 		.chat__list-item {
 			padding: 10px;
 			font-size: 0.9em;
 		}
+		.chat__list-item span{
+			font-weight: bold;
+		}
 		.chat__list-item.service {
+			font-size: 0.8em;
+			text-align: center;
+			font-style: italic;
 			background-color: #f5f5f5;
 		}
 		.chat__list-item.me {
 			background-color: #e2fee2;
+		}
+		.chat__list-item.me.service {
+			font: normal bold 2em/1em 'Roboto', sans-serif;
+			background-color: green;
+			color: #fff;
 		}
 		.chat__input {
 			position: fixed;
@@ -41,7 +52,7 @@
 <body>
 	<div class="chat">
 		<ul class="chat__list">
-			<li class="chat__list-item" v-bind:class="{ service: message.type == 1, me:message.type == 2 }" v-for="message in messages" track-by='$index'>{{message.text}}</li>
+			<li class="chat__list-item" v-bind:class="{ 'service': message.service, 'me' : message.id == id }" v-for="message in messages" track-by='$index'><span v-on:click="talk">{{(message.id == id) ? 'You' : id}}</span> {{message.text}}</li>
 		</ul>	
 
 		<input class="chat__input" type="text" placeholder="Tap message" v-model="message" v-on:keydown="send">
@@ -51,31 +62,29 @@
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script>
 		const socket = io();
-		socket.on('connect',() => {
-			console.log('Client connected');
-		});
 		new Vue({
 			el: '.chat',
 			data: {
 				message: '',
-				messages: []
+				messages: [],
+				id: 0
 			},
 			methods: {
 				send: function(e) {
-					if (e.keyCode !== 13) {
-						return;
-					}
-					let myMsg = {
-						text: this.message,
-						type: 2
-					};
-					socket.emit('message.sent', myMsg);
-
+					if (e.keyCode !== 13) return;
+					socket.emit('message.sent', this.message);
 					this.message = '';
+				},
+				talk: function(e) {
+					let link = e.target.innerHTML;
+					if (link != 'You') {
+						this.message = link+', '+this.message;
+					}
 				}
 			},
 			mounted: function() {
 				socket.on('message', function (message) {
+					if (message.service && !this.messages.length) this.id = message.id;
 					this.messages.push(message);
 				}.bind(this));
 			}

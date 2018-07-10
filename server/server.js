@@ -11,20 +11,20 @@ app.get('/', (request, response) => {
 })
 
 io.on('connection', function (socket) {
-	var user = Date.now(), service;
+	var user = Date.now(), 
+		service = {
+			service: true,
+			id: user,
+			text: 'connected'
+		};
+	io.emit('message', service);
 	socket.on('message.sent', (message) =>{
-		console.log(message, user);
 		let msg = {
-			type: 0,
-			text: user + ': ' + message.text
+			id: user,
+			text: message
 		};
 		io.emit('message', msg);
 	});
-	service = {
-		type: 1,
-		text: user + ' is connected'
-	};
-	io.emit('message', service);
 });
 
 http.listen(port, ()=> {
