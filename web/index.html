@@ -14,6 +14,11 @@
 		.chat {
 			width: 100%;
 		}
+		h1 {
+			font-size: 1.2em;
+			text-align: center;
+			padding: 0 5%;
+		}
 		.chat__list {
 			list-style-type: none;
 			padding: 0;
@@ -28,7 +33,6 @@
 		}
 		.chat__list-item.service {
 			font-size: 0.8em;
-			text-align: center;
 			font-style: italic;
 			background-color: #f5f5f5;
 		}
@@ -36,7 +40,6 @@
 			background-color: #e2fee2;
 		}
 		.chat__list-item.me.service {
-			font: normal bold 2em/1em 'Roboto', sans-serif;
 			background-color: green;
 			color: #fff;
 		}
@@ -51,6 +54,7 @@
 </head>
 <body>
 	<div class="chat">
+		<h1>Hello, {{id + "! There are " + total + " users in this chat!"}}</h1>
 		<ul class="chat__list">
 			<li class="chat__list-item" v-bind:class="{ 'service': message.service, 'me' : message.id == id }" v-for="message in messages" track-by='$index'><span v-on:click="talk">{{(message.id == id) ? 'You' : id}}</span> {{message.text}}</li>
 		</ul>	
@@ -67,7 +71,8 @@
 			data: {
 				message: '',
 				messages: [],
-				id: 0
+				id: 0,
+				total: 1
 			},
 			methods: {
 				send: function(e) {
@@ -84,7 +89,10 @@
 			},
 			mounted: function() {
 				socket.on('message', function (message) {
-					if (message.service && !this.messages.length) this.id = message.id;
+					if (message.service && !this.messages.length) {
+						this.id = message.id;
+					}
+					this.total = message.total;
 					this.messages.push(message);
 				}.bind(this));
 			}

@@ -13,6 +13,7 @@ app.get('/', (request, response) => {
 io.on('connection', function (socket) {
 	var user = Date.now(), 
 		service = {
+			total: io.engine.clientsCount,
 			service: true,
 			id: user,
 			text: 'connected'
@@ -24,6 +25,10 @@ io.on('connection', function (socket) {
 			text: message
 		};
 		io.emit('message', msg);
+	});
+	socket.on('disconnect', function(){
+		service.text = 'disconnected';
+		io.emit('message', service);
 	});
 });
 
